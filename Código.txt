@@ -1,0 +1,117 @@
+#include <Keypad.h>
+#include <Servo.h>
+#include <LiquidCrystal.h>
+
+//Funções
+void ativaAlame();
+void desativaAlarme();
+boolean password();
+
+//Definições de pinos
+#define SENSOR A0
+const byte ROWS = 4;
+const byte COLS = 4;
+char keys[ROWS][COLS] = {
+	{'1', '2', '3', 'A'},
+	{'4', '5', '6', 'B'},
+	{'7', '8', '9', 'C'},
+	{'*', '0', '#', 'D'}
+};
+byte rowPins[ROWS] = {10, 9, 8, 7};
+byte rowPins[COLS] = {6, 5, 4, 3};
+
+//Inicializações
+LiquidCrystal lcd (A1, A2, A3, A4, A5, 2); // pinos LCD
+//Definir o teclado númerico no arduino
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+//Variáveis
+
+//Variável para controle de ativação do sistema, se tiver TRUE e se alguém passar pelo sensor o sistema será alarmado
+boolean sistemaArmado = true;
+boolean alarm = false; //Variável do alarme
+boolean correct = false; 
+String senha = "6754"; //Senha correta
+String buf = "";
+int i = 0; //Quantidade de digitos da senha
+
+vois setup(){ //Inicialização do sistema
+	Serial.begin(9600); //Comunicação serial
+	pinMode(12,OUTPUT);
+	lcd.begin(16, 2);
+	lcd.print("Sistema Armado!");
+}
+
+void loop(){
+	char key1 = keypad.getKey(); //Recebe o char digitado
+	if (key1 != NO_KEY){ //Verifica se o teclado foi digitado
+		if(key1 == 'A'){ //Ele ativa o sistema como TRUE e o aciona
+			sistemaArmado = true;
+			lcd.clear();
+			lcd.print("Sistema Armado!");
+		}
+		else if(key1 == 'D'){ //Ele ativa o sistema como FALSE e o desativa
+			sistemaArmado = false;
+			lcd.clear();
+			lcd.print("Sistema");
+			lcd.setCursor(0,1);
+			lcd.print("Desarmado!");
+			lcd.setCursor(1,0);
+		}
+	}
+	int valorLido = anologRead(SENSOR); //Verifica o sensor
+	if (valorLido>0 && sistema Armado){
+		ativaAlarme();
+	}
+	if (alarm){
+		correct = password();
+		if(correct){
+			desativaAlarme();
+			lcd.clear();
+			lcd.print("Senha correta!");
+			delay(2000);
+			lcd.clear();
+			lcd.print("Sistema Aramado!");
+		}else{
+			lcd.clear();
+			lcd.print("Senha incorreta!");;;;;;;
+			delay(2000);
+			lcd.clear();
+		}
+	}
+}
+
+boolean pasword(){
+	lcd.clear();
+	lcd.print("SENHA: ");
+	while( i<4){ //Executa enquanto não digita os 4 dígitos da senha
+		char key = keypad.getKey(); //Recebe o char digitado
+		if (key != NO_KEY){ //Se tiver digitado adiciona no buf
+			buf+= key;
+			lcd.print(key);
+			i++:
+		}
+	}
+	delay(500);
+	if (buf == senha){
+		i = 0;
+		buf = "";
+		return (true);
+	} else {
+		i = 0;
+		buf = "";
+		return (false);
+	}
+}
+
+void ativaAlarme(){
+	alarm = true;
+	digitalWrite(12,HIGH);
+	tone(11,1000);
+}
+
+void desativaAlarme(){
+	alarm = false;
+	digitalWrite(12,LOW);
+	noTone(11);
+}
